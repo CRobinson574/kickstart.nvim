@@ -92,7 +92,7 @@ vim.g.maplocalleader = ' '
 vim.keymap.set('n', '<leader>pv', vim.cmd.Ex)
 vim.keymap.set('n', '<leader>u', vim.cmd.UndotreeToggle)
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- set tabs to 4 spaces
 vim.o.tabstop = 4 -- A TAB character looks like 4 spaces
@@ -722,7 +722,7 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        -- clangd = {},
+        clangd = {},
         -- gopls = {},
         -- pyright = {},
         -- rust_analyzer = {},
@@ -734,7 +734,6 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
         --
-
         lua_ls = {
           -- cmd = { ... },
           -- filetypes = { ... },
@@ -744,10 +743,29 @@ require('lazy').setup({
               completion = {
                 callSnippet = 'Replace',
               },
-              -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-              -- diagnostics = { disable = { 'missing-fields' } },
             },
+            -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
+            -- diagnostics = { disable = { 'missing-fields' } },
           },
+        },
+        omnisharp = {
+          -- When set to false, csharp.nvim won't launch omnisharp automatically.
+          enable = true,
+          -- When set, csharp.nvim won't install omnisharp automatically. Instead, the omnisharp instance in the cmd_path will be used.
+          cmd_path = nil,
+          -- The default timeout when communicating with omnisharp
+          default_timeout = 1000,
+          -- Settings that'll be passed to the omnisharp server
+          enable_editor_config_support = true,
+          organize_imports = true,
+          load_projects_on_demand = false,
+          enable_analyzers_support = true,
+          enable_import_completion = true,
+          include_prerelease_sdks = true,
+          analyze_open_documents_only = false,
+          enable_package_auto_restore = true,
+          -- Launches omnisharp in debug mode
+          debug = false,
         },
       }
 
@@ -766,9 +784,16 @@ require('lazy').setup({
       -- for you, so that they are available from within Neovim.
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
-        'stylua', -- Used to format Lua code
+        'stylua',
+        'clangd', -- Used to format Lua code
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+
+      require('lspconfig').omnisharp.setup {
+        cmd = { 'omnisharp' }, -- Or specify full path if needed
+        enable_roslyn_analyzers = true,
+        organize_imports_on_format = true,
+      }
 
       require('mason-lspconfig').setup {
         ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
@@ -932,10 +957,13 @@ require('lazy').setup({
   -- change the command in the config to whatever the name of that colorscheme is.
   --
   {
-    'morhetz/gruvbox',
+    'catppuccin/nvim',
     priority = 1000,
     config = function()
-      vim.cmd.colorscheme 'gruvbox'
+      require('catppuccin').setup {
+        transparent_background = true,
+      }
+      vim.cmd.colorscheme 'catppuccin'
     end,
   },
   -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
@@ -985,7 +1013,7 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'c_sharp' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
